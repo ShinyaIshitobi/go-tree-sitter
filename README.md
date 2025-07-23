@@ -34,10 +34,10 @@ bazel build //:tree_sitter_compressed
 
 ## Build Targets
 
-| Target                    | Output                          | Description                                    |
-| ------------------------- | ------------------------------- | ---------------------------------------------- |
-| `test_brotli_compression` | `bazel-bin/test.txt.br`         | Test file for Brotli compression (~30B)        |
-| `tree_sitter_compressed`  | `bazel-bin/libtree_sitter.a.br` | Compressed Tree-sitter static library (~5.5KB) |
+| Target                    | Output                         | Description                                    |
+| ------------------------- | ------------------------------ | ---------------------------------------------- |
+| `test_brotli_compression` | `bazel-bin/test.txt.br`        | Test file for Brotli compression (~30B)        |
+| `tree_sitter_compressed`  | `bazel-bin/treesitter.wasm.br` | Compressed Tree-sitter static library (~5.5KB) |
 
 ## Output Files
 
@@ -46,7 +46,7 @@ After running the build commands, compressed files will be available:
 ```
 bazel-bin/
 ├── test.txt.br              # Sample compressed file
-└── libtree_sitter.a.br      # Compressed Tree-sitter library
+└── treesitter.wasm.br       # Compressed Tree-sitter library
 ```
 
 ### How to Generate WASM.br Files
@@ -57,7 +57,7 @@ To create compressed WASM files:
 
    ```bash
    bazel build //:tree_sitter_compressed
-   # Generates: bazel-bin/libtree_sitter.a.br
+   # Generates: bazel-bin/treesitter.wasm.br
    ```
 
 2. **For WASM output** (requires Emscripten):
