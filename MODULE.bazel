@@ -1,0 +1,21 @@
+"""
+go-tree-sitter by tobi
+"""
+
+module(name = "go-tree-sitter")
+
+bazel_dep(name = "rules_cc", version = "0.0.9")
+
+http_archive = use_repo_rule("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+
+http_archive(
+    name = "tree_sitter_src",
+    strip_prefix = "tree-sitter-0.25.8",
+    urls = ["https://github.com/tree-sitter/tree-sitter/archive/refs/tags/v0.25.8.zip"],
+)
+
+http_archive(
+    name = "com_google_brotli",
+    strip_prefix = "brotli-1.1.0",
+    urls = ["https://github.com/google/brotli/archive/refs/tags/v1.1.0.zip"],
+)

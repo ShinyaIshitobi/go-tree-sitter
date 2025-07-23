@@ -1,0 +1,33 @@
+"""Tree-sitter Go binding with Brotli compression support."""
+
+genrule(
+    name = "test_file",
+    outs = ["test.txt"],
+    cmd = "echo 'Hello, Tree-sitter WASM!' > $@",
+)
+
+# Brotli圧縮テスト
+genrule(
+    name = "test_brotli_compression",
+    srcs = [":test_file"],
+    outs = ["test.txt.br"],
+    cmd = "$(location @com_google_brotli//:brotli) -o $@ $(SRCS)",
+    tools = ["@com_google_brotli//:brotli"],
+)
+
+# Tree-sitter静的ライブラリを生成 (ローカルthird_party使用)
+genrule(
+    name = "tree_sitter_static_lib",
+    srcs = ["//third_party/tree_sitter_src:core"],
+    outs = ["libtree_sitter.a"],
+    cmd = "ar rcs $@ $(locations //third_party/tree_sitter_src:core)",
+)
+
+# Tree-sitter静的ライブラリをbrotli圧縮
+genrule(
+    name = "tree_sitter_compressed",
+    srcs = [":tree_sitter_static_lib"],
+    outs = ["libtree_sitter.a.br"],
+    cmd = "$(location @com_google_brotli//:brotli) -o $@ $(SRCS)",
+    tools = ["@com_google_brotli//:brotli"],
+)

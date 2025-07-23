@@ -1,0 +1,25 @@
+load("@rules_cc//cc:defs.bzl", "cc_library")
+
+package(default_visibility = ["//visibility:public"])
+
+cc_library(
+    name = "core",
+    srcs = [
+        "lib/src/alloc.c",
+        "lib/src/language.c",
+        "lib/src/tree.c",
+    ],
+    hdrs = glob([
+        "lib/include/**/*.h",
+        "lib/src/**/*.h",
+    ]),
+    copts = [
+        "-std=gnu99",
+        "-fPIC",
+        "-DTREE_SITTER_HIDE_SYMBOLS",
+    ],
+    includes = [
+        "lib/include",
+        "lib/src",
+    ],
+)

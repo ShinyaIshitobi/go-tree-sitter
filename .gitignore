@@ -1,0 +1,37 @@
+# Bazel output directories
+bazel-*
+
+# Build outputs
+*.o
+*.a
+*.so
+*.dylib
+*.br
+
+# IDE/Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# macOS
+.DS_Store
+
+# Go
+vendor/
+*.exe
+*.test
+*.prof
+
+# Temporary files
+*.tmp
+*.temp
+*.log
+
+# Third party dependencies (ignore downloaded sources but keep BUILD files)
+third_party/tree_sitter_src/*
+!third_party/tree_sitter_src/BUILD.bazel
+
+# Generated files
+*.generated.* 
