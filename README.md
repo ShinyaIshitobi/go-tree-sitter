@@ -19,7 +19,7 @@ This project provides Tree-sitter bindings for Go with integrated Brotli compres
 ### Prerequisites
 
 - [Bazel](https://bazel.build/)
-- Go 1.19+
+- Go 1.24.5+
 - Clang/GCC for C compilation
 
 ### Build Commands
