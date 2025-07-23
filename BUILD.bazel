@@ -15,17 +15,17 @@ genrule(
     tools = ["@com_google_brotli//:brotli"],
 )
 
-# Deploy compressed WASM file to source tree
+# Generate compressed WASM file to source tree
 genrule(
-    name = "deploy",
+    name = "generate",
     srcs = [":tree_sitter_wasm_compressed"],
-    outs = ["deploy.stamp"],
+    outs = ["generate.stamp"],
     cmd = """
         # Copy the compressed WASM file to the source tree
         cp $(location :tree_sitter_wasm_compressed) lib/treesitter.wasm.br
         
-        # Create a stamp file to indicate deployment is complete
-        echo "Deployed treesitter.wasm.br to lib/ at $$(date)" > $(location deploy.stamp)
+        # Create a stamp file to indicate generation is complete
+        echo "Generated treesitter.wasm.br to lib/ at $$(date)" > $(location generate.stamp)
     """,
     local = 1,  # Run locally, not in sandbox
 )

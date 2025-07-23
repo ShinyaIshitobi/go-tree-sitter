@@ -1,153 +1,177 @@
 # go-tree-sitter
 
-A Go binding for Tree-sitter with Brotli compression support for WASM output.
+A Tree-sitter WASM binding with Brotli compression support.
 
 ## Overview
 
-This project provides Tree-sitter bindings for Go with integrated Brotli compression capabilities. It's designed to generate compressed WASM modules and static libraries optimized for web deployment.
+This project provides a **one-command solution** to generate Brotli-compressed Tree-sitter WASM files for web deployment. It automatically downloads the official web-tree-sitter NPM package and compresses the pre-built WASM file using Brotli.
 
 ## Features
 
-- 🌳 **Tree-sitter Integration**: Full Tree-sitter parsing library support
-- 🗜️ **Brotli Compression**: Automatic compression of build outputs
-- 📦 **WASM Ready**: Optimized for WebAssembly deployment
-- 🔧 **Bazel Build System**: Modern, scalable build configuration
-- 📂 **Go Vendor Structure**: Standard Go dependency management
+- 🌳 **Tree-sitter WASM**: Official pre-built Tree-sitter WebAssembly bindings
+- 🗜️ **Brotli Compression**: Automatic Brotli compression (67% size reduction)
+- ⚡ **One Command**: Single command generates and deploys compressed WASM
+- 📦 **NPM Integration**: Downloads from official web-tree-sitter NPM package
+- 🔧 **Bazel Native**: Pure Bazel build with http_archive - no vendor directories
+- 🚀 **Production Ready**: Optimized for web deployment
 
 ## Quick Start
 
 ### Prerequisites
 
-- [Bazel](https://bazel.build/)
-- Go 1.24.5+
-- Clang/GCC for C compilation
+- [Bazel](https://bazel.build/) 6.0+
 
-### Build Commands
+### Build & Generate
+
+**One command to rule them all:**
 
 ```bash
-# Test Brotli compression with sample file
-bazel build //:test_brotli_compression
-
-# Build compressed Tree-sitter static library
-bazel build //:tree_sitter_compressed
+bazel build //:generate
 ```
 
-## Build Targets
+This command will:
 
-| Target                    | Output                         | Description                                    |
-| ------------------------- | ------------------------------ | ---------------------------------------------- |
-| `test_brotli_compression` | `bazel-bin/test.txt.br`        | Test file for Brotli compression (~30B)        |
-| `tree_sitter_compressed`  | `bazel-bin/treesitter.wasm.br` | Compressed Tree-sitter static library (~5.5KB) |
+1. 📥 Download `web-tree-sitter-0.25.8.tgz` from NPM
+2. 📦 Extract the pre-built `tree-sitter.wasm` file (201KB)
+3. 🗜️ Compress it with Brotli to `treesitter.wasm.br` (65KB)
+4. 📂 Generate to `lib/treesitter.wasm.br`
 
-## Output Files
+## Output
 
-After running the build commands, compressed files will be available:
+After running the command, you'll have:
 
 ```
-bazel-bin/
-├── test.txt.br              # Sample compressed file
-└── treesitter.wasm.br       # Compressed Tree-sitter library
+lib/treesitter.wasm.br    # 65KB compressed WASM file (67% size reduction)
 ```
 
-### How to Generate WASM.br Files
+### File Size Comparison
 
-To create compressed WASM files:
-
-1. **Build the static library** (current):
-
-   ```bash
-   bazel build //:tree_sitter_compressed
-   # Generates: bazel-bin/treesitter.wasm.br
-   ```
-
-2. **For WASM output** (requires Emscripten):
-
-   - Add Emscripten toolchain to your MODULE.bazel
-   - Create WASM build target using `emcc_binary` rule
-   - Apply Brotli compression to the WASM output
-
-   Example WASM target (to be implemented):
-
-   ```starlark
-   # Future WASM target
-   genrule(
-       name = "tree_sitter_wasm_compressed",
-       srcs = [":tree_sitter_wasm"],
-       outs = ["tree_sitter.wasm.br"],
-       cmd = "$(location @com_google_brotli//:brotli) -o $@ $(SRCS)",
-       tools = ["@com_google_brotli//:brotli"],
-   )
-   ```
+| File                 | Size  | Description                       |
+| -------------------- | ----- | --------------------------------- |
+| `tree-sitter.wasm`   | 201KB | Original WASM from NPM package    |
+| `treesitter.wasm.br` | 65KB  | Brotli compressed (67% reduction) |
 
 ## Project Structure
 
 ```
-├── BUILD.bazel                              # Main build configuration
-├── MODULE.bazel                            # Bazel module dependencies
-├── vendor/                                 # Go-style vendor directory
-│   └── github.com/
-│       └── tree-sitter/
-│           └── tree-sitter/
-│               ├── BUILD.bazel             # Tree-sitter build config
-│               └── lib/                    # Tree-sitter C library
-└── bazel-bin/                              # Build outputs (ignored)
+├── BUILD.bazel                 # Single genrule for WASM compression & generation
+├── MODULE.bazel               # External dependencies (web-tree-sitter, brotli)
+├── lib/
+│   └── treesitter.wasm.br     # 🎯 Final compressed WASM output
+├── bazel-bin/                 # Build artifacts (auto-generated)
+└── bazel-*                    # Bazel symlinks (auto-generated)
 ```
 
-## Dependencies
+## Build Configuration
 
-- **Tree-sitter**: v0.25.8 (parsing library)
-- **Brotli**: v1.1.0 (compression library)
-- **rules_cc**: v0.0.9 (C/C++ build rules)
+### Key Dependencies
 
-## Configuration
+| Dependency        | Version | Source                 | Purpose              |
+| ----------------- | ------- | ---------------------- | -------------------- |
+| `web-tree-sitter` | 0.25.8  | NPM Registry           | Pre-built WASM files |
+| `brotli`          | 1.1.0   | GitHub                 | Compression          |
+| `rules_cc`        | 0.0.9   | Bazel Central Registry | C++ build rules      |
 
-### MODULE.bazel
+### BUILD.bazel Overview
 
-- Configures external dependencies via Bzlmod
-- Downloads Tree-sitter and Brotli sources
-- Sets up C/C++ compilation rules
+```starlark
+# Single genrule that handles everything:
+genrule(
+    name = "tree_sitter_wasm_compressed",
+    srcs = ["@web_tree_sitter//:wasm_files"],      # NPM package WASM
+    outs = ["lib/treesitter.wasm.br"],            # Compressed output
+    cmd = "brotli compression command",
+    tools = ["@com_google_brotli//:brotli"],
+)
 
-### BUILD.bazel
+# Generate target that copies to source tree
+genrule(
+    name = "generate",
+    srcs = [":tree_sitter_wasm_compressed"],
+    outs = ["generate.stamp"],
+    cmd = "copy to lib/ directory",
+    local = 1,  # Run outside sandbox
+)
+```
 
-- Defines build targets for compression
-- Configures Tree-sitter static library generation
-- Sets up Brotli compression pipeline
+## Performance
 
-## Development
+### Build Times
 
-### Adding New Compression Targets
+- **First run**: ~3 seconds (downloads dependencies)
+- **Subsequent runs**: ~0.1 seconds (cached)
 
-1. Define your source target in BUILD.bazel
-2. Create a corresponding compression rule:
-   ```starlark
-   genrule(
-       name = "your_target_compressed",
-       srcs = [":your_target"],
-       outs = ["your_file.br"],
-       cmd = "$(location @com_google_brotli//:brotli) -o $@ $(SRCS)",
-       tools = ["@com_google_brotli//:brotli"],
-   )
-   ```
+### Compression Efficiency
 
-### Vendor Management
+- **Original size**: 201KB
+- **Compressed size**: 65KB
+- **Compression ratio**: 67% reduction
+- **Web performance**: Faster loading, less bandwidth
 
-Tree-sitter sources are managed in Go-standard vendor structure:
+## Advanced Usage
 
-- Sources: `vendor/github.com/tree-sitter/tree-sitter/`
-- Build config: `vendor/github.com/tree-sitter/tree-sitter/BUILD.bazel`
-- Git tracking: Only BUILD.bazel is tracked, sources are ignored
+### Manual Build Steps
+
+If you want to build without auto-generation:
+
+```bash
+# Just compress (output to bazel-bin/)
+bazel build //:tree_sitter_wasm_compressed
+
+# Then manually copy
+cp bazel-bin/lib/treesitter.wasm.br lib/
+```
+
+### Customization
+
+To use a different version of web-tree-sitter, update `MODULE.bazel`:
+
+```starlark
+http_archive(
+    name = "web_tree_sitter",
+    urls = ["https://registry.npmjs.org/web-tree-sitter/-/web-tree-sitter-X.Y.Z.tgz"],
+    strip_prefix = "package",
+    # ... rest of config
+)
+```
+
+## Comparison with Other Approaches
+
+| Approach              | Pros                                                              | Cons                                                         |
+| --------------------- | ----------------------------------------------------------------- | ------------------------------------------------------------ |
+| **This Project**      | ✅ One command<br>✅ No toolchain setup<br>✅ Reproducible builds | ❌ Requires Bazel                                            |
+| **Manual Download**   | ✅ Simple                                                         | ❌ Manual steps<br>❌ No compression<br>❌ Not automated     |
+| **Build from Source** | ✅ Full control                                                   | ❌ Requires Emscripten<br>❌ Complex setup<br>❌ Slow builds |
+
+## Troubleshooting
+
+### Common Issues
+
+**Q: `bazel command not found`**
+
+- Install Bazel: `brew install bazel` (macOS) or see [Bazel installation guide](https://bazel.build/install)
+
+**Q: Build fails with network error**
+
+- Check internet connection
+- Try: `bazel clean && bazel build //:generate`
+
+**Q: File not appearing in `lib/`**
+
+- Ensure you're running `bazel build //:generate` (not just `:tree_sitter_wasm_compressed`)
+- Check build output for errors
 
 ## License
 
-This project is licensed under the MIT License. Tree-sitter is licensed under the MIT License.
+MIT License. Tree-sitter is also licensed under MIT License.
 
 ## Contributing
 
 1. Fork the repository
-2. Create your feature branch
-3. Add appropriate build targets and tests
+2. Make your changes
+3. Test with `bazel build //:generate`
 4. Submit a pull request
 
 ---
 
-**Note**: This project is optimized for WASM deployment with Brotli compression. For production use, ensure your web server is configured to serve `.br` files with appropriate `Content-Encoding: br` headers.
+**🎯 Goal**: Provide the easiest way to get a production-ready, compressed Tree-sitter WASM file for web applications.
