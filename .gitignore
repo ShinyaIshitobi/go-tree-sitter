@@ -18,20 +18,19 @@ bazel-*
 # macOS
 .DS_Store
 
-# Go
-vendor/
-*.exe
-*.test
-*.prof
-
 # Temporary files
 *.tmp
 *.temp
 *.log
 
-# Third party dependencies (ignore downloaded sources but keep BUILD files)
-third_party/tree_sitter_src/*
-!third_party/tree_sitter_src/BUILD.bazel
+# Vendor dependencies (ignore downloaded sources but keep BUILD files)
+vendor/github.com/tree-sitter/tree-sitter/*
+!vendor/github.com/tree-sitter/tree-sitter/BUILD.bazel
+
+vendor/
+*.exe
+*.test
+*.prof
 
 # Generated files
 *.generated.* 
