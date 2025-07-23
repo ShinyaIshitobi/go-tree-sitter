@@ -1,19 +1,23 @@
 """
-go-tree-sitter by tobi
+go-tree-sitter: A Tree-sitter Go binding with Brotli compression support for WASM deployment.
 """
 
 module(name = "go-tree-sitter")
 
+# C/C++ build rules for compiling Tree-sitter library
 bazel_dep(name = "rules_cc", version = "0.0.9")
 
+# HTTP archive rule for downloading external dependencies
 http_archive = use_repo_rule("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
+# Tree-sitter parsing library v0.25.8
 http_archive(
     name = "tree_sitter_src",
     strip_prefix = "tree-sitter-0.25.8",
     urls = ["https://github.com/tree-sitter/tree-sitter/archive/refs/tags/v0.25.8.zip"],
 )
 
+# Google Brotli compression library v1.1.0
 http_archive(
     name = "com_google_brotli",
     strip_prefix = "brotli-1.1.0",
