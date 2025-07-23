@@ -1,33 +1,31 @@
-"""Tree-sitter Go binding with Brotli compression support."""
+"""Tree-sitter WASM binding with Brotli compression support."""
 
+# Download pre-built WASM from web-tree-sitter NPM package and compress with Brotli
 genrule(
-    name = "test_file",
-    outs = ["test.txt"],
-    cmd = "echo 'Hello, Tree-sitter WASM!' > $@",
-)
-
-# Brotli compression test
-genrule(
-    name = "test_brotli_compression",
-    srcs = [":test_file"],
-    outs = ["test.txt.br"],
-    cmd = "$(location @com_google_brotli//:brotli) -o $@ $(SRCS)",
+    name = "tree_sitter_wasm_compressed",
+    srcs = ["@web_tree_sitter//:wasm_files"],
+    outs = ["lib/treesitter.wasm.br"],
+    cmd = """
+        # Create output directory
+        mkdir -p $$(dirname $(location lib/treesitter.wasm.br))
+        
+        # Compress WASM file with Brotli
+        $(location @com_google_brotli//:brotli) -o $(location lib/treesitter.wasm.br) $(SRCS)
+    """,
     tools = ["@com_google_brotli//:brotli"],
 )
 
-# Generate Tree-sitter static library (using Go-style vendor structure)
+# Generate compressed WASM file to source tree
 genrule(
-    name = "tree_sitter_static_lib",
-    srcs = ["//vendor/github.com/tree-sitter/tree-sitter:core"],
-    outs = ["libtreesitter.a"],
-    cmd = "ar rcs $@ $(locations //vendor/github.com/tree-sitter/tree-sitter:core)",
-)
-
-# Compress Tree-sitter static library with Brotli
-genrule(
-    name = "tree_sitter_compressed",
-    srcs = [":tree_sitter_static_lib"],
-    outs = ["treesitter.wasm.br"],
-    cmd = "$(location @com_google_brotli//:brotli) -o $@ $(SRCS)",
-    tools = ["@com_google_brotli//:brotli"],
+    name = "generate",
+    srcs = [":tree_sitter_wasm_compressed"],
+    outs = ["generate.stamp"],
+    cmd = """
+        # Copy the compressed WASM file to the source tree
+        cp $(location :tree_sitter_wasm_compressed) lib/treesitter.wasm.br
+        
+        # Create a stamp file to indicate generation is complete
+        echo "Generated treesitter.wasm.br to lib/ at $$(date)" > $(location generate.stamp)
+    """,
+    local = 1,  # Run locally, not in sandbox
 )
